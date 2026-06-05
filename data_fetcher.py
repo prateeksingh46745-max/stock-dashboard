@@ -22,17 +22,27 @@ def get_stock_info(ticker):
     """
     Fetch basic company info — name, sector, current price etc.
     """
-    stock = yf.Ticker(ticker)
-    info = stock.info
-    
-    return {
-        "name": info.get("longName", ticker),
-        "sector": info.get("sector", "N/A"),
-        "current_price": info.get("currentPrice", "N/A"),
-        "market_cap": info.get("marketCap", "N/A"),
-        "52w_high": info.get("fiftyTwoWeekHigh", "N/A"),
-        "52w_low": info.get("fiftyTwoWeekLow", "N/A"),
-    }
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        
+        return {
+            "name": info.get("longName", ticker),
+            "sector": info.get("sector", "N/A"),
+            "current_price": info.get("currentPrice") or info.get("regularMarketPrice", "N/A"),
+            "market_cap": info.get("marketCap", "N/A"),
+            "52w_high": info.get("fiftyTwoWeekHigh", "N/A"),
+            "52w_low": info.get("fiftyTwoWeekLow", "N/A"),
+        }
+    except Exception:
+        return {
+            "name": ticker,
+            "sector": "N/A",
+            "current_price": "N/A",
+            "market_cap": "N/A",
+            "52w_high": "N/A",
+            "52w_low": "N/A",
+        }
 
 def get_currency_symbol(ticker):
     """
