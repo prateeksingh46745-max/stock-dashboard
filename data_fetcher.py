@@ -15,21 +15,40 @@ def get_stock_data(ticker, period="1mo", interval="1d"):
     except Exception:
         return None
 
-@st.cache_data(ttl=300)  # cache for 5 minutes
+@st.cache_data(ttl=300)
 def get_stock_info(ticker):
     """
-    Fetch basic company info — name, sector, current price etc.
+    Fetch basic company info — pulls price from history as fallback.
     """
     try:
         stock = yf.Ticker(ticker)
-        info = stock.info
+        
+        # Get price from history (more reliable on cloud)
+        hist = stock.history(period="5d")
+        current_price = round(hist["Close"].iloc[-1], 2) if not hist.empty else "N/A"
+        week_high = round(hist["High"].max(), 2) if not hist.empty else "N/A"
+        
+        # Try getting full info
+        try:
+            info = stock.info
+            name = info.get("longName", ticker)
+            sector = info.get("sector", "N/A")
+            market_cap = info.get("marketCap", "N/A")
+            week_high = info.get("fiftyTwoWeekHigh", week_high)
+            week_low = info.get("fiftyTwoWeekLow", "N/A")
+        except Exception:
+            name = ticker
+            sector = "N/A"
+            market_cap = "N/A"
+            week_low = "N/A"
+
         return {
-            "name": info.get("longName", ticker),
-            "sector": info.get("sector", "N/A"),
-            "current_price": info.get("currentPrice") or info.get("regularMarketPrice", "N/A"),
-            "market_cap": info.get("marketCap", "N/A"),
-            "52w_high": info.get("fiftyTwoWeekHigh", "N/A"),
-            "52w_low": info.get("fiftyTwoWeekLow", "N/A"),
+            "name": name,
+            "sector": sector,
+            "current_price": current_price,
+            "market_cap": market_cap,
+            "52w_high": week_high,
+            "52w_low": week_low,
         }
     except Exception:
         return {
