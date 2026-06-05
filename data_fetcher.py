@@ -1,23 +1,21 @@
 import yfinance as yf
+import streamlit as st
 
+@st.cache_data(ttl=300)  # cache for 5 minutes
 def get_stock_data(ticker, period="1mo", interval="1d"):
     """
     Fetch historical stock data for a given ticker.
-    
-    ticker   → stock symbol e.g. "AAPL", "TSLA", "INFY"
-    period   → how far back: "1d", "5d", "1mo", "3mo", "6mo", "1y"
-    interval → candle size: "1m", "5m", "15m", "1h", "1d"
     """
-    stock = yf.Ticker(ticker)
-    stock_df = stock.history(period=period, interval=interval)
-    
-    # Clean up
-    stock_df.index = stock_df.index.tz_localize(None)  # remove timezone info
-    stock_df = stock_df[["Open", "High", "Low", "Close", "Volume"]]  # keep only what we need
-    
-    return stock_df
+    try:
+        stock = yf.Ticker(ticker)
+        df = stock.history(period=period, interval=interval)
+        df.index = df.index.tz_localize(None)
+        df = df[["Open", "High", "Low", "Close", "Volume"]]
+        return df
+    except Exception:
+        return None
 
-
+@st.cache_data(ttl=300)  # cache for 5 minutes
 def get_stock_info(ticker):
     """
     Fetch basic company info — name, sector, current price etc.
@@ -25,7 +23,6 @@ def get_stock_info(ticker):
     try:
         stock = yf.Ticker(ticker)
         info = stock.info
-        
         return {
             "name": info.get("longName", ticker),
             "sector": info.get("sector", "N/A"),
@@ -49,26 +46,21 @@ def get_currency_symbol(ticker):
     Returns correct currency symbol based on ticker suffix.
     """
     ticker = ticker.upper()
-    
     if any(x in ticker for x in [".NS", ".BO", "^NSEI", "^BSESN"]):
-        return "₹"  # Indian Rupee
+        return "₹"
     elif any(x in ticker for x in [".L", "^FTSE", "^FTMC"]):
-        return "£"  # British Pound
+        return "£"
     elif any(x in ticker for x in [".T", "^N225"]):
-        return "¥"  # Japanese Yen
+        return "¥"
     else:
-        return "$"  # US Dollar (default)
-    
-# Indian number system uses Lakhs & Crores, not Millions & Billions
+        return "$"
+
 def format_market_cap(value, currency_symbol):
     """
-    Formats market cap:
-    Indian stocks → Crores (₹)
-    Others        → Billions ($)
+    Formats market cap in Crores for Indian, Billions for others.
     """
     if value == "N/A" or not value:
         return "N/A"
-    
     if currency_symbol == "₹":
         crores = value / 1e7
         if crores >= 1_00_000:
