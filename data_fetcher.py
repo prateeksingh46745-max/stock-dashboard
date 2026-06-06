@@ -23,12 +23,12 @@ def get_stock_info(ticker):
     try:
         stock = yf.Ticker(ticker)
         
-        # Get price from history (more reliable on cloud)
+        
         hist = stock.history(period="5d")
         current_price = round(hist["Close"].iloc[-1], 2) if not hist.empty else "N/A"
         week_high = round(hist["High"].max(), 2) if not hist.empty else "N/A"
         
-        # Try getting full info
+        
         try:
             info = stock.info
             name = info.get("longName", ticker)

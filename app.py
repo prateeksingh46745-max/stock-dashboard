@@ -5,13 +5,12 @@ from plotly.subplots import make_subplots
 from data_fetcher import get_stock_data, get_stock_info, get_currency_symbol, format_market_cap
 from indicators import apply_all_indicators
 
-# ─── PAGE CONFIG ────────────────────────────────────────────
 st.set_page_config(
     page_title="Stock Dashboard",
     page_icon="📈",
     layout="wide"
 )
-# ─── CUSTOM CSS ─────────────────────────────────────────────
+
 st.markdown("""
     <style>
         /* Main background */
@@ -65,7 +64,8 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
-# ─── SIDEBAR ────────────────────────────────────────────────
+
+# ─ SIDEBAR 
 st.sidebar.title("📈 Stock Dashboard")
 
 # Region selector
@@ -135,7 +135,7 @@ market_stocks = {
     }
 }
 
-# Show stocks for selected region
+
 selected_stocks = market_stocks[market_region]
 selected_quick = st.sidebar.selectbox(
     "Quick Select",
@@ -144,7 +144,7 @@ selected_quick = st.sidebar.selectbox(
 
 st.sidebar.divider()
 
-# Manual input — prefill with quick select if chosen
+
 default_ticker = selected_stocks[selected_quick] if selected_quick != "-- Select --" else list(selected_stocks.values())[0]
 ticker = st.sidebar.text_input("Or Enter Any Ticker", value=default_ticker).upper()
 
@@ -169,25 +169,25 @@ st.sidebar.divider()
 st.sidebar.subheader("📊 Compare Stocks")
 compare_ticker = st.sidebar.text_input("Compare with (optional)", value="").upper()
 
-# ─── AUTO REFRESH ───────────────────────────────────────────
+# ─ AUTO REFRESH 
 if auto_refresh:
     import time
     st.sidebar.info("Auto-refresh is ON")
 
-# ─── LOAD DATA ──────────────────────────────────────────────
+# ─ LOAD DATA 
 with st.spinner(f"Fetching data for {ticker}..."):
     stock_df = get_stock_data(ticker, period=period, interval=interval)
     info = get_stock_info(ticker)
     stock_df = apply_all_indicators(stock_df)
 
-# ─── HEADER ─────────────────────────────────────────────────
+# ─ HEADER 
 st.title(f"{info['name']} ({ticker})")
 st.caption(f"Sector: {info['sector']}")
 
-# ─── CURRENCY DETECTION ──────────────────────────────────────
+# ─ CURRENCY DETECTION 
 currency = get_currency_symbol(ticker)
 
-# ─── METRIC CARDS ───────────────────────────────────────────
+# ─ METRIC CARDS 
 col1, col2, col3, col4, col5 = st.columns(5)
 
 col1.metric("Current Price", f"{currency}{info['current_price']}")
@@ -201,7 +201,7 @@ col5.metric("RSI (14)", f"{latest_rsi} — {rsi_signal}")
 
 st.divider()
 
-# ─── CANDLESTICK + MA CHART ─────────────────────────────────
+# ─ MA Chart
 fig = make_subplots(
     rows=3, cols=1,
     shared_xaxes=True,
@@ -210,7 +210,7 @@ fig = make_subplots(
     subplot_titles=("Price & Indicators", "Volume", "RSI")
 )
 
-# Candlestick
+
 fig.add_trace(go.Candlestick(
     x=stock_df.index,
     open=stock_df["Open"], high=stock_df["High"],
@@ -218,7 +218,7 @@ fig.add_trace(go.Candlestick(
     name="Price"
 ), row=1, col=1)
 
-# Moving averages
+
 fig.add_trace(go.Scatter(x=stock_df.index, y=stock_df["MA20"], name="MA20",
     line=dict(color="orange", width=1.5)), row=1, col=1)
 
@@ -232,7 +232,7 @@ fig.add_trace(go.Scatter(x=stock_df.index, y=stock_df["BB_Upper"], name="BB Uppe
 fig.add_trace(go.Scatter(x=stock_df.index, y=stock_df["BB_Lower"], name="BB Lower",
     line=dict(color="gray", width=1, dash="dash"),
     fill="tonexty", fillcolor="rgba(128,128,128,0.1)"), row=1, col=1)
-# Compare stock overlay
+
 if compare_ticker:
     stock_df_compare = get_stock_data(compare_ticker, period=period, interval=interval)
     # Normalize to percentage change for fair comparison
@@ -252,17 +252,17 @@ if compare_ticker:
         name=ticker,
         line=dict(color="cyan", width=1.5)
     ), row=1, col=1)
-# Volume bars
+
 fig.add_trace(go.Bar(
     x=stock_df.index, y=stock_df["Volume"],
     name="Volume", marker_color="rgba(100, 149, 237, 0.6)"
 ), row=2, col=1)
 
-# RSI line
+
 fig.add_trace(go.Scatter(x=stock_df.index, y=stock_df["RSI"], name="RSI",
     line=dict(color="purple", width=1.5)), row=3, col=1)
 
-# RSI reference lines
+
 fig.add_hline(y=70, line_dash="dash", line_color="red", row=3, col=1)
 fig.add_hline(y=30, line_dash="dash", line_color="green", row=3, col=1)
 
@@ -275,11 +275,11 @@ fig.update_layout(
 
 st.plotly_chart(fig, width='stretch')
 
-# ─── RAW DATA TABLE ─────────────────────────────────────────
+# ─ RAW DATA TABLE 
 with st.expander("📊 View Raw Data"):
     st.dataframe(stock_df.tail(20), width='stretch')
 
-# ─── EXPORT ─────────────────────────────────────────────────
+# ─ EXPORT 
 st.subheader("📥 Export Data")
 
 csv = stock_df.to_csv().encode("utf-8")
@@ -290,7 +290,7 @@ st.download_button(
     file_name=f"{ticker}_stock_data.csv",
     mime="text/csv"
 )    
-# ─── LATEST NEWS ────────────────────────────────────────────
+# ─ LATEST NEWS 
 st.subheader(f"📰 Latest News — {ticker}")
 
 try:
