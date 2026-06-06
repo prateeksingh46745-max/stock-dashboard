@@ -65,7 +65,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ─ SIDEBAR 
+# Sidebar setup
 st.sidebar.title("📈 Stock Dashboard")
 
 # Region selector
@@ -148,6 +148,7 @@ st.sidebar.divider()
 default_ticker = selected_stocks[selected_quick] if selected_quick != "-- Select --" else list(selected_stocks.values())[0]
 ticker = st.sidebar.text_input("Or Enter Any Ticker", value=default_ticker).upper()
 
+# using 3mo as default because 1mo doesn't have enough data for MA50
 period = st.sidebar.selectbox(
     "Time Period",
     options=["1mo", "3mo", "6mo", "1y", "2y"],
@@ -169,25 +170,25 @@ st.sidebar.divider()
 st.sidebar.subheader("📊 Compare Stocks")
 compare_ticker = st.sidebar.text_input("Compare with (optional)", value="").upper()
 
-# ─ AUTO REFRESH 
+# Auto refresh
 if auto_refresh:
     import time
     st.sidebar.info("Auto-refresh is ON")
 
-# ─ LOAD DATA 
+# Load the data
 with st.spinner(f"Fetching data for {ticker}..."):
     stock_df = get_stock_data(ticker, period=period, interval=interval)
     info = get_stock_info(ticker)
     stock_df = apply_all_indicators(stock_df)
 
-# ─ HEADER 
+# Show header
 st.title(f"{info['name']} ({ticker})")
 st.caption(f"Sector: {info['sector']}")
 
-# ─ CURRENCY DETECTION 
+# Currency detection
 currency = get_currency_symbol(ticker)
 
-# ─ METRIC CARDS 
+# Metric cards 
 col1, col2, col3, col4, col5 = st.columns(5)
 
 col1.metric("Current Price", f"{currency}{info['current_price']}")
@@ -201,7 +202,7 @@ col5.metric("RSI (14)", f"{latest_rsi} — {rsi_signal}")
 
 st.divider()
 
-# ─ MA Chart
+# MA Chart
 fig = make_subplots(
     rows=3, cols=1,
     shared_xaxes=True,
@@ -275,11 +276,11 @@ fig.update_layout(
 
 st.plotly_chart(fig, width='stretch')
 
-# ─ RAW DATA TABLE 
+# Raw Data Table 
 with st.expander("📊 View Raw Data"):
     st.dataframe(stock_df.tail(20), width='stretch')
 
-# ─ EXPORT 
+# Export 
 st.subheader("📥 Export Data")
 
 csv = stock_df.to_csv().encode("utf-8")
@@ -290,7 +291,7 @@ st.download_button(
     file_name=f"{ticker}_stock_data.csv",
     mime="text/csv"
 )    
-# ─ LATEST NEWS 
+# Latest News 
 st.subheader(f"📰 Latest News — {ticker}")
 
 try:
@@ -329,3 +330,14 @@ try:
 
 except Exception as e:
     st.warning(f"Couldn't load news right now. Try refreshing.")
+
+# Footer
+st.divider()
+st.markdown("""
+    <div style="text-align:center; color:#8b949e; font-size:13px;">
+        Built by <strong style="color:#58a6ff;">Prateek Singh Chouhan</strong> · 
+        Data via yfinance · 
+        <a href="https://github.com/prateeksingh46745-max" 
+           style="color:#58a6ff;">GitHub</a>
+    </div>
+""", unsafe_allow_html=True)

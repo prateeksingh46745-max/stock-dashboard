@@ -1,11 +1,7 @@
 import pandas as pd
 
 def add_moving_averages(stock_df):
-    """
-    Add 20-day and 50-day moving averages to the dataframe.
-    MA20 → short-term trend
-    MA50 → long-term trend
-    """
+    # MA20 catches short term moves, MA50 shows the bigger trend
     stock_df["MA20"] = stock_df["Close"].rolling(window=20).mean()
     stock_df["MA50"] = stock_df["Close"].rolling(window=50).mean()
     return stock_df

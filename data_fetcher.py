@@ -1,17 +1,15 @@
 import yfinance as yf
 import streamlit as st
 
-@st.cache_data(ttl=300)  # cache for 5 minutes
+@st.cache_data(ttl=300)
 def get_stock_data(ticker, period="1mo", interval="1d"):
-    """
-    Fetch historical stock data for a given ticker.
-    """
+    # pulls OHLCV data for the given ticker and cleans it up
     try:
         stock = yf.Ticker(ticker)
-        df = stock.history(period=period, interval=interval)
-        df.index = df.index.tz_localize(None)
-        df = df[["Open", "High", "Low", "Close", "Volume"]]
-        return df
+        stock_df = stock.history(period=period, interval=interval)
+        stock_df.index = stock_df.index.tz_localize(None)
+        stock_df = stock_df[["Open", "High", "Low", "Close", "Volume"]]
+        return stock_df
     except Exception:
         return None
 
