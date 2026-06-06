@@ -41,7 +41,7 @@ Track live stock data, technical indicators, and market news across global marke
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/Prateeksinghchouhan12/stock-dashboard.git
+git clone https://github.com/prateeksingh46745-max/stock-dashboard.git
 cd stock-dashboard
 ```
 
@@ -62,7 +62,7 @@ streamlit run app.py
 ```
 
 ## 📸 Screenshot
-*Add a screenshot of your dashboard here after deployment*
+![Stock Dashboard](screenshot.png)
 
 ## 👨‍💻 Built By
-**Prateek Singh Chouhan** — [GitHub](https://github.com/Prateeksinghchouhan12)
+**Prateek Singh Chouhan** — [GitHub](https://github.com/prateeksingh46745-max)
